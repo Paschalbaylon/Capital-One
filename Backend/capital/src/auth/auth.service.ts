@@ -3,10 +3,11 @@ import {
   ConflictException,
   ForbiddenException,
   Injectable,
+  Logger,
 } from '@nestjs/common';
 import { SignUpDto } from './dto/signup.dto';
 import { SignInDto } from './dto/sigIn.dto';
-import { PrismaService } from 'prisma/prisma.service';
+import { PrismaService } from 'src/prisma/prisma.service';
 import * as bcrypt from 'bcrypt';
 import { Role } from 'src/enum/Roles.enum';
 import { JwtService } from '@nestjs/jwt';
@@ -15,6 +16,8 @@ import { hashPin } from 'src/utils/pin.util';
 
 @Injectable()
 export class AuthService {
+  private readonly logger = new Logger(AuthService.name);
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly jwt: JwtService,
@@ -39,12 +42,26 @@ export class AuthService {
         username,
         email,
         hashedPassword,
-        role: signUpDto.role || Role.USER,
       },
     });
 
-    // SEND EMAIL
-    await this.mailService.sendWelcomeEmail(user.email, user.username);
+    // SEND EMAIL WITH PROPER ERROR HANDLING
+    try {
+      await this.mailService.sendWelcomeEmail(user.email, user.username);
+      this.logger.log(`Welcome email sent to ${user.email}`);
+    } catch (error) {
+      // Type guard to safely access error properties
+      if (error instanceof Error) {
+        this.logger.error(
+          `Failed to send welcome email to ${user.email}: ${error.message}`,
+        );
+      } else {
+        this.logger.error(
+          `Failed to send welcome email to ${user.email}: Unknown error`,
+        );
+      }
+      // Don't fail the registration if email fails
+    }
 
     return { message: 'User created successfully' };
   }
@@ -60,14 +77,6 @@ export class AuthService {
       throw new ConflictException('Invalid credentials');
     }
 
-    // // ✅ Check if user is PENDING
-    // if (foundUser.status === 'PENDING') {
-    //   throw new ForbiddenException(
-    //     'Your account is pending approval. Please contact support or wait for admin approval.',
-    //   );
-    // }
-
-    // ✅ Check if user is SUSPENDED
     if (foundUser.status === 'SUSPENDED') {
       throw new ForbiddenException(
         'Your account has been suspended. Please contact support.',
@@ -90,8 +99,22 @@ export class AuthService {
       status: foundUser.status,
     });
 
-    // LOGIN ALERT
-    await this.mailService.sendLoginAlert(foundUser.email);
+    // LOGIN ALERT WITH PROPER ERROR HANDLING
+    try {
+      await this.mailService.sendLoginAlert(foundUser.email);
+      this.logger.log(`Login alert sent to ${foundUser.email}`);
+    } catch (error) {
+      if (error instanceof Error) {
+        this.logger.error(
+          `Failed to send login alert to ${foundUser.email}: ${error.message}`,
+        );
+      } else {
+        this.logger.error(
+          `Failed to send login alert to ${foundUser.email}: Unknown error`,
+        );
+      }
+      // Don't fail the login if email fails
+    }
 
     return {
       message: 'Login successful',
@@ -109,7 +132,20 @@ export class AuthService {
       data: { transactionPin: hashedPin },
     });
 
-    await this.mailService.sendPinSetEmail(user.email, user.username);
+    try {
+      await this.mailService.sendPinSetEmail(user.email, user.username);
+      this.logger.log(`PIN set email sent to ${user.email}`);
+    } catch (error) {
+      if (error instanceof Error) {
+        this.logger.error(
+          `Failed to send PIN set email to ${user.email}: ${error.message}`,
+        );
+      } else {
+        this.logger.error(
+          `Failed to send PIN set email to ${user.email}: Unknown error`,
+        );
+      }
+    }
 
     return { message: 'PIN set successfully' };
   }

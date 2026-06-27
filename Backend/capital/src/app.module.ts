@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { AuthModule } from './auth/auth.module';
-import { PrismaModule } from 'prisma/PrismaModule';
+import { PrismaModule } from 'src/prisma/PrismaModule';
 import { ConfigModule } from '@nestjs/config';
 import { MailModule } from './mail/mail.module';
 import { MailerModule } from '@nestjs-modules/mailer';
@@ -23,7 +23,7 @@ import { UsersModule } from './users/users.module';
         },
       },
       defaults: {
-        from: '"My App" <no-reply@myapp.com>',
+        from: '"Capital Bank" <no-reply@myapp.com>',
       },
     }),
     AuthModule,

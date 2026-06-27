@@ -3,8 +3,8 @@ import {
   NotFoundException,
   ForbiddenException,
 } from '@nestjs/common';
-import { User } from '@prisma/client/wasm';
-import { PrismaService } from 'prisma/prisma.service';
+import { User } from '@prisma/client';
+import { PrismaService } from 'src/prisma/prisma.service';
 import { Role } from 'src/enum/Roles.enum';
 
 @Injectable()

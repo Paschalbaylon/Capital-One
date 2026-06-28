@@ -42,7 +42,7 @@ export class AuthService {
         username,
         email,
         hashedPassword,
-        role,
+        role: role || Role.USER,
       },
     });
 

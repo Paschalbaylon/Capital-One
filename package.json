@@ -1,12 +1,11 @@
 {
   "name": "bank-app",
   "private": true,
- 
- "scripts": {
-  "dev": "concurrently \"npm run dev:fe\" \"npm run dev:be\"",
-  "dev:fe": "cd frontend/Capital && npm run dev",
-  "dev:be": "cd backend/capital && npm run start:dev"
-},
+  "scripts": {
+    "dev": "concurrently \"npm run dev:fe\" \"npm run dev:be\"",
+    "dev:fe": "cd frontend/capital && npm run dev",
+    "dev:be": "cd backend/capital && npm run start:dev"
+  },
   "devDependencies": {
     "concurrently": "^9.2.1"
   }

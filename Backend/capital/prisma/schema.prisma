@@ -1,9 +1,6 @@
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 datasource db {
   provider = "sqlite"
   url      = "file:./dev.db"
@@ -20,13 +17,14 @@ enum AccountStatus {
 }
 
 model User {
-  id             Int       @id @default(autoincrement())
+  id             String    @id @default(cuid())
   username       String
   email          String    @unique
   hashedPassword String
   transactionPin String    @default("0000")
   role           String    @default("USER")
   status         String    @default("PENDING")
+  profilePicture String?
   accounts       Account[]
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
@@ -36,27 +34,24 @@ model User {
 }
 
 model Account {
-  id            Int           @id @default(autoincrement())
+  id            String        @id @default(cuid())
   accountNumber String        @unique
   balance       Float         @default(0)
-  userId        Int
-  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade) // Delete accounts when user is deleted
+  userId        String
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   status        AccountStatus @default(ACTIVE)
-
-  // Add createdBy field (optional)
-  createdBy     Int?
-  createdByUser User? @relation("AccountCreatedBy", fields: [createdBy], references: [id])
-
-  transactions Transaction[]
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
+  createdBy     String?
+  createdByUser User?         @relation("AccountCreatedBy", fields: [createdBy], references: [id])
+  transactions  Transaction[]
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
 }
 
 model Transaction {
-  id        Int      @id @default(autoincrement())
+  id        String   @id @default(cuid())
   type      String
   amount    Float
-  accountId Int
+  accountId String
   account   Account  @relation(fields: [accountId], references: [id])
   notes     String?
   createdAt DateTime @default(now())

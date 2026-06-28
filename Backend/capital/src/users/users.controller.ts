@@ -61,9 +61,9 @@ export class UsersController {
   })
   @ApiParam({
     name: 'userId',
-    type: Number,
-    description: 'User ID of the pending user record',
-    example: 12,
+    type: String, // Changed from Number to String
+    description: 'User ID (UUID) of the pending user record',
+    example: 'ckw9x8h4j0000v7k5t1g2h3i4', // Updated example to UUID format
   })
   @ApiResponse({
     status: 200,
@@ -78,12 +78,12 @@ export class UsersController {
     description: 'Pending user record not found',
   })
   async getPendingById(
-    @Param('userId', ParseIntPipe) userId: number,
+    @Param('userId') userId: string, // Changed: Removed ParseIntPipe, type is string
     @Req() req,
   ) {
     return this.usersService.getPendingUserById(
-      req.user.id,
-      userId,
+      req.user.id, // Now a string (UUID)
+      userId, // Now a string (UUID)
       req.user.role,
     );
   }
@@ -103,7 +103,7 @@ export class UsersController {
         total: 3,
         data: [
           {
-            id: 1,
+            id: 'ckw9x8h4j0000v7k5t1g2h3i4', // Updated to UUID format
             email: 'john@example.com',
             username: 'john_doe',
             role: 'USER',

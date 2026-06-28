@@ -25,7 +25,7 @@ export class AuthService {
   ) {}
 
   async create(signUpDto: SignUpDto) {
-    const { username, email, password } = signUpDto;
+    const { username, email, password, role } = signUpDto;
 
     const foundUser = await this.prisma.user.findUnique({
       where: { email },
@@ -42,6 +42,7 @@ export class AuthService {
         username,
         email,
         hashedPassword,
+        role,
       },
     });
 
@@ -124,7 +125,7 @@ export class AuthService {
     };
   }
 
-  async setWithdrawalPin(userId: number, pin: string) {
+  async setWithdrawalPin(userId: string, pin: string) {
     const hashedPin = await hashPin(pin);
 
     const user = await this.prisma.user.update({
@@ -150,7 +151,7 @@ export class AuthService {
     return { message: 'PIN set successfully' };
   }
 
-  async remove(id: number) {
+  async remove(id: string) {
     await this.prisma.user.delete({
       where: { id },
     });
@@ -170,7 +171,7 @@ export class AuthService {
   }
 
   async generateToken(payload: {
-    sub: number;
+    sub: string;
     email: string;
     role: Role;
     status: string;

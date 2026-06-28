@@ -36,7 +36,7 @@ import { WithdrawEditDto } from './dtos/withdrawEdit.dto';
 
 interface RequestWithUser extends Request {
   user: {
-    id: number;
+    id: string; // Changed from number to string (UUID)
     email: string;
     role: string;
   };
@@ -50,12 +50,12 @@ export class AccountsController {
 
   /*
    * Admin creates account for a specific user
-   * POST /accounts
+   * POST /accounts/approve/:userId
    */
   @Post('approve/:userId')
-  @UseGuards(RolesGuard) // Add the guard here
+  @UseGuards(RolesGuard)
   @Roles(Role.ADMIN)
-  @HttpCode(HttpStatus.CREATED) // 201 Created status
+  @HttpCode(HttpStatus.CREATED)
   @ApiOperation({
     summary: 'Approve pending user and create account',
     description:
@@ -63,9 +63,9 @@ export class AccountsController {
   })
   @ApiParam({
     name: 'userId',
-    type: Number,
-    description: 'ID of the pending user',
-    example: 5,
+    type: String, // Changed from Number to String
+    description: 'ID (UUID) of the pending user',
+    example: 'ckw9x8h4j0000v7k5t1g2h3i4',
   })
   @ApiResponse({
     status: 201,
@@ -80,12 +80,12 @@ export class AccountsController {
     description: 'Pending user not found or already has an account',
   })
   async createAccountForPendingUser(
-    @Param('userId', ParseIntPipe) userId: number,
+    @Param('userId') userId: string, // Changed: Removed ParseIntPipe, type is string
     @Req() req,
   ) {
     return this.accountsService.createAccountForPendingUser(
-      req.user.id, // adminId from JWT
-      userId,
+      req.user.id, // adminId from JWT (now string UUID)
+      userId, // Now a string (UUID)
     );
   }
 
@@ -101,14 +101,10 @@ export class AccountsController {
   })
   async getAllAccounts(@Req() req) {
     return this.accountsService.getAllAccountsForAdmin(
-      req.user.id,
+      req.user.id, // Now a string (UUID)
       req.user.role,
     );
   }
-  // @Post(':userId')
-  // create(@Param('userId', ParseIntPipe) userId: number) {
-  //   return this.accountsService.createAccount(userId);
-  // }
 
   @Post('deposit/:accountNumber')
   async deposit(
@@ -116,7 +112,7 @@ export class AccountsController {
     @Body() depositDto: DepositDto,
     @Req() req,
   ) {
-    const userId = req.user.id;
+    const userId = req.user.id; // Now a string (UUID)
     const userRole = req.user.role;
     return this.accountsService.deposit(
       accountNumber,
@@ -132,10 +128,9 @@ export class AccountsController {
     @Body() withdrawDto: WithdrawDto,
     @Req() req,
   ) {
-    const userId = req.user.id;
+    const userId = req.user.id; // Now a string (UUID)
     const userRole = req.user.role;
 
-    // ✅ This should work - passing 4 arguments to a method expecting 4 parameters
     return this.accountsService.withdraw(
       accountNumber,
       withdrawDto,
@@ -157,7 +152,7 @@ export class AccountsController {
     @Body() transferDto: TransferDto,
     @Req() req,
   ) {
-    const userId = req.user.id;
+    const userId = req.user.id; // Now a string (UUID)
     const userRole = req.user.role;
     return this.accountsService.transfer(
       fromAccountNumber,
@@ -166,30 +161,43 @@ export class AccountsController {
       userRole,
     );
   }
+
   // Get account details with recent transactions
   @Get(':id')
   @ApiOperation({ summary: 'Get account details with recent transactions' })
-  @ApiParam({ name: 'id', description: 'Account ID', type: Number })
+  @ApiParam({
+    name: 'id',
+    description: 'Account ID (UUID)',
+    type: String, // Changed from Number to String
+    example: 'ckw9x8h4j0000v7k5t1g2h3i4',
+  })
   @ApiResponse({
     status: 200,
     description: 'Account details retrieved successfully',
   })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 404, description: 'Account not found' })
-  getAccountInfo(@Param('id', ParseIntPipe) accountId: number, @Req() req) {
-    const userId = req.user.id;
+  getAccountInfo(@Param('id') accountId: string, @Req() req) {
+    // Changed: Removed ParseIntPipe, type is string
+    const userId = req.user.id; // Now a string (UUID)
     return this.accountsService.getAccountInfo(accountId, userId);
   }
 
   // Get account balance only
   @Get(':id/balance')
   @ApiOperation({ summary: 'Get account balance' })
-  @ApiParam({ name: 'id', description: 'Account ID', type: Number })
+  @ApiParam({
+    name: 'id',
+    description: 'Account ID (UUID)',
+    type: String, // Changed from Number to String
+    example: 'ckw9x8h4j0000v7k5t1g2h3i4',
+  })
   @ApiResponse({ status: 200, description: 'Balance retrieved successfully' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 404, description: 'Account not found' })
-  getBalance(@Param('id', ParseIntPipe) accountId: number, @Req() req) {
-    const userId = req.user.id;
+  getBalance(@Param('id') accountId: string, @Req() req) {
+    // Changed: Removed ParseIntPipe, type is string
+    const userId = req.user.id; // Now a string (UUID)
     return this.accountsService.getBalance(accountId, userId);
   }
 
@@ -199,18 +207,18 @@ export class AccountsController {
   @ApiResponse({ status: 200, description: 'Accounts retrieved successfully' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   async getUserAccounts(@Req() req) {
-    const userId = req.user.id;
+    const userId = req.user.id; // Now a string (UUID)
     return this.accountsService.getUserAccounts(userId);
   }
 
   @Get('account/:accountId')
   async getTransactionHistory(
-    @Param('accountId', ParseIntPipe) accountId: number,
+    @Param('accountId') accountId: string, // Changed: Removed ParseIntPipe, type is string
     @Req() req: RequestWithUser,
     @Query('page') page = '1',
     @Query('limit') limit = '10',
   ) {
-    const userId = req.user.id;
+    const userId = req.user.id; // Now a string (UUID)
 
     return this.accountsService.getTransactionHistory(
       accountId,
@@ -224,11 +232,11 @@ export class AccountsController {
   @Roles(Role.ADMIN)
   @UseGuards(JwtAuthGuard)
   async closeAccount(
-    @Param('accountId', ParseIntPipe) accountId: number,
+    @Param('accountId') accountId: string, // Changed: Removed ParseIntPipe, type is string
     @Req() req: RequestWithUser,
     @Body() closeAccountDto: CloseAccountDto,
   ) {
-    const userId = req.user.id;
+    const userId = req.user.id; // Now a string (UUID)
     const { pin } = closeAccountDto;
 
     return this.accountsService.closeAccount(accountId, userId, pin);
@@ -263,7 +271,7 @@ export class AccountsController {
           newBalance: 2000,
           amountDeposited: 1000,
           transaction: {
-            id: 1,
+            id: 'ckw9x8h4j0000v7k5t1g2h3i4', // Updated to UUID format
             amount: 1000,
             type: 'DEPOSIT',
             createdAt: '2024-01-15T10:30:00.000Z',
@@ -306,7 +314,7 @@ export class AccountsController {
       accountNumber,
       amount,
       customDate,
-      req.user.id,
+      req.user.id, // Now a string (UUID)
       req.user.role,
     );
   }
@@ -341,7 +349,7 @@ export class AccountsController {
           previousBalance: 2000,
           newBalance: 1000,
           amountWithdrawn: 1000,
-          transactionId: 1,
+          transactionId: 'ckw9x8h4j0000v7k5t1g2h3i4', // Updated to UUID format
           timestamp: '2024-01-15T10:30:00.000Z',
         },
       },
@@ -372,31 +380,8 @@ export class AccountsController {
     return this.accountsService.withdrawAndEdit(
       accountNumber,
       withdrawDto,
-      req.user.id,
+      req.user.id, // Now a string (UUID)
       req.user.role,
     );
   }
 }
-
-// @Patch('pin/change')
-// async changePin(
-//   @Req() req: Interfaces.RequestWithUser,
-//   @Body() dto: ChangePinDto,
-// ) {
-//   // Now req.user is type-safe
-//   return this.accountsService.changeTransactionPin(
-//     req.user.id,
-//     dto.oldPin,
-//     dto.newPin,
-//   );
-// }
-
-// @Patch('pin/reset')
-// resetPin(@Req() req, @Body() dto: { email: string }) {
-//   return this.accountsService.resetTransactionPin(req.user.id, dto.email);
-// }
-
-// @Post('pin/verify')
-// verifyPin(@Req() req, @Body() dto: { pin: string }) {
-//   return this.accountsService.verifyPin(req.user.id, dto.pin);
-// }

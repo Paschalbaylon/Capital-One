@@ -49,13 +49,15 @@ export class AuthController {
       throw new BadRequestException('PIN must be 4 digits');
     }
 
+    // req.user.id is now a string (UUID)
     return this.authService.setWithdrawalPin(req.user.id, dto.pin);
   }
 
   @Delete('logout/:id')
   @HttpCode(HttpStatus.OK)
   @UseGuards(JwtAuthGuard)
-  remove(@Param('id', ParseIntPipe) id: number) {
+  remove(@Param('id') id: string) {
+    // Changed: Removed ParseIntPipe, changed type to string
     return this.authService.remove(id);
   }
 }

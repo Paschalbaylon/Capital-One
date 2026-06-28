@@ -111,8 +111,8 @@ export class UsersService {
    * Admin or User: Get pending user record by userId
    */
   async getPendingUserById(
-    requesterId: number,
-    targetUserId: number,
+    requesterId: string,
+    targetUserId: string,
     requesterRole?: string,
   ) {
     const isAdmin = requesterRole === Role.ADMIN || requesterRole === 'ADMIN';

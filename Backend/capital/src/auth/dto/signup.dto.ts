@@ -18,6 +18,12 @@ export class SignUpDto {
   readonly email!: string;
 
   @ApiProperty()
+  @IsNotEmpty()
+  @Transform(({ value }) => value?.trim())
+  @IsString()
+  readonly role?: string;
+
+  @ApiProperty()
   @IsString()
   @IsNotEmpty()
   @Transform(({ value }) => value?.trim())
